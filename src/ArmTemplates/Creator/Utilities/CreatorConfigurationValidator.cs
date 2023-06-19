@@ -198,10 +198,10 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Utilitie
                 {
                     foreach (KeyValuePair<string, OperationsConfig> operation in api.Operations)
                     {
-                        if (operation.Value == null || operation.Value.Policy == null)
+                        if (operation.Value == null || (operation.Value.Policy == null && operation.Value.ExcludeFromApi == null))
                         {
                             isValid = false;
-                            throw new CreatorConfigurationIsInvalidException("Policy XML is required if an API operation is provided");
+                            throw new CreatorConfigurationIsInvalidException("Policy XML or ExcludeFromApi is required if an API operation is provided");
                         }
                     }
                 }

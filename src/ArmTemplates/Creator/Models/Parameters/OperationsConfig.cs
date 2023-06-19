@@ -15,5 +15,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Models.P
     {
         // policy file location (local or url)
         public string Policy { get; set; }
+
+        public bool? ExcludeFromApi { get; set; }
     }
 }

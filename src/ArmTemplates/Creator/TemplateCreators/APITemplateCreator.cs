@@ -19,6 +19,11 @@ using Microsoft.Azure.Management.ApiManagement.ArmTemplates.Common.Templates.Bui
 using Microsoft.Azure.Management.ApiManagement.ArmTemplates.Common.Templates.TagApi;
 using Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Models.Parameters;
 using Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.TemplateCreators.Abstractions;
+using System.IO;
+using System.Text;
+using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Writers;
+using Microsoft.OpenApi.Models;
 
 namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.TemplateCreators
 {
@@ -233,6 +238,10 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
 
                 // if the title needs to be modified
                 // we need to embed the OpenAPI definition
+                    
+                // read the spec
+                var stream = new MemoryStream(Encoding.UTF8.GetBytes(value));
+                var openApiSpec = new OpenApiStreamReader().Read(stream, out var diagnostic);
 
                 if (!string.IsNullOrEmpty(api.DisplayName))
                 {
@@ -245,14 +254,37 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                         using (var client = new WebClient())
                             value = client.DownloadString(value);
                     }
-
-                    // update title
-
-                    value = new OpenApi(value, format)
-                        .SetTitle(api.DisplayName)
-                        .GetDefinition()
-                        ;
+                   
+                    // update the title
+                    openApiSpec.Info.Title = api.DisplayName;
                 }
+
+                // Find operations that are to be excluded and remove those operations from the spec.
+                if(api.Operations != null) {
+                    var excludedOperations = api.Operations.Where(o => o.Value.ExcludeFromApi == true).Select(s => s.Key);
+
+                    // For each path go through the operations and remove any that are on the excluded operations list.
+                    foreach (KeyValuePair<string, OpenApiPathItem> path in openApiSpec.Paths)
+                    {
+                        foreach (KeyValuePair<OperationType, OpenApiOperation> operation in path.Value.Operations) {
+                            if(excludedOperations.Contains(operation.Value.OperationId)) {
+                                path.Value.Operations.Remove(operation.Key);
+                            }
+                        }
+
+                        // If the path has no operations remaining, remove the path.
+                        if(path.Value.Operations.Count == 0) {
+                            openApiSpec.Paths.Remove(path.Key);
+                        }
+                    }
+                }
+
+                // Serialize the modified spec
+                var stringWriter = new StringWriter();
+                var openApiWriter = new OpenApiJsonWriter(stringWriter);
+                openApiSpec.SerializeAsV3(openApiWriter);
+
+                value = stringWriter.ToString();
 
                 // set the version set id
                 if (api.ApiVersionSetId != null)

@@ -139,7 +139,9 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
             List<PolicyTemplateResource> policyTemplateResources = new List<PolicyTemplateResource>();
             foreach (KeyValuePair<string, OperationsConfig> pair in api.Operations)
             {
-                policyTemplateResources.Add(this.CreateOperationPolicyTemplateResource(pair, api.Name, dependsOn));
+                if(pair.Value.Policy != null) {
+                    policyTemplateResources.Add(this.CreateOperationPolicyTemplateResource(pair, api.Name, dependsOn));
+                }
             }
             return policyTemplateResources;
         }
