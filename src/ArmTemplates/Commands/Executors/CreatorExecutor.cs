@@ -247,6 +247,10 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Commands.Executo
             {
                 FileWriter.WriteJSONToFile(apiVersionSetsTemplate, Path.Combine(this.creatorParameters.OutputLocation, this.creatorParameters.FileNames.ApiVersionSets));
             }
+            if (backendsTemplate != null)
+            {
+                FileWriter.WriteJSONToFile(backendsTemplate, Path.Combine(this.creatorParameters.OutputLocation, this.creatorParameters.FileNames.Backends));
+            }
             if (productsTemplate != null)
             {
                 FileWriter.WriteJSONToFile(productsTemplate, Path.Combine(this.creatorParameters.OutputLocation, this.creatorParameters.FileNames.Products));
@@ -262,10 +266,6 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Commands.Executo
             if (loggersTemplate != null)
             {
                 FileWriter.WriteJSONToFile(loggersTemplate, Path.Combine(this.creatorParameters.OutputLocation, this.creatorParameters.FileNames.Loggers));
-            }
-            if (backendsTemplate != null)
-            {
-                FileWriter.WriteJSONToFile(backendsTemplate, Path.Combine(this.creatorParameters.OutputLocation, this.creatorParameters.FileNames.Backends));
             }
             if (authorizationServersTemplate != null)
             {
