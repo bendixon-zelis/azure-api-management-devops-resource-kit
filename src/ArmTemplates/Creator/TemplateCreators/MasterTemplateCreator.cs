@@ -61,6 +61,13 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 string apiVersionSetUri = this.GenerateLinkedTemplateUri(creatorConfig, fileNames.ApiVersionSets);
                 resources.Add(this.CreateLinkedMasterTemplateResource("versionSetTemplate", apiVersionSetUri, new string[] { }, null, false));
             }
+            
+            // backend
+            if (backendsTemplate != null)
+            {
+                string backendsUri = this.GenerateLinkedTemplateUri(creatorConfig, fileNames.Backends);
+                resources.Add(this.CreateLinkedMasterTemplateResource("backendsTemplate", backendsUri, new string[] { }, null, false));
+            }
 
             // product
             if (productsTemplate != null)
@@ -90,13 +97,6 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
             {
                 string loggersUri = this.GenerateLinkedTemplateUri(creatorConfig, fileNames.Loggers);
                 resources.Add(this.CreateLinkedMasterTemplateResource("loggersTemplate", loggersUri, new string[] { }, null, false));
-            }
-
-            // backend
-            if (backendsTemplate != null)
-            {
-                string backendsUri = this.GenerateLinkedTemplateUri(creatorConfig, fileNames.Backends);
-                resources.Add(this.CreateLinkedMasterTemplateResource("backendsTemplate", backendsUri, new string[] { }, null, false));
             }
 
             // authorizationServer
