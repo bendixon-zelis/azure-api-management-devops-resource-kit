@@ -109,6 +109,14 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 },
                 DependsOn = dependsOn
             };
+
+            if(!isUrl && policyTemplateResource.Properties.PolicyContent.Contains("set-backend-service"))
+            {
+                List<string> dependencies = new List<String>(policyTemplateResource.DependsOn);
+                dependencies.Add("[resourceId('Microsoft.Resources/deployments', 'backendsTemplate')]");
+                policyTemplateResource.DependsOn = dependencies.ToArray();
+            }
+
             return policyTemplateResource;
         }
 
