@@ -72,8 +72,14 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
             // product
             if (productsTemplate != null)
             {
+                // If there are any backends, assume product policy might reference them.
+                var dependsOn = new string[] { };
+                if(backendsTemplate != null) {
+                    dependsOn = new string[] { "[resourceId('Microsoft.Resources/deployments', 'backendsTemplate')]" };
+                }
+
                 string productsUri = this.GenerateLinkedTemplateUri(creatorConfig, fileNames.Products);
-                resources.Add(this.CreateLinkedMasterTemplateResource("productsTemplate", productsUri, new string[] { }, null, false));
+                resources.Add(this.CreateLinkedMasterTemplateResource("productsTemplate", productsUri, dependsOn, null, false));
             }
 
             // productApi
