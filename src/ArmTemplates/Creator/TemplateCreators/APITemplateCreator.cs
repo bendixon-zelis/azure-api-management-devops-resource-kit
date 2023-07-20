@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 // Find operations that are to be excluded and remove those operations from the spec.
                 if(api.Operations != null) {
                     var excludedOperations = api.Operations.Where(o => o.Value.ExcludeFromApi == true).Select(s => s.Key);
-
+                
                     // For each path go through the operations and remove any that are on the excluded operations list.
                     foreach (KeyValuePair<string, OpenApiPathItem> path in openApiSpec.Paths)
                     {
@@ -284,6 +284,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 var openApiWriter = new OpenApiJsonWriter(stringWriter);
                 openApiSpec.SerializeAsV3(openApiWriter);
                 api.OpenApiSpecFormat = OpenApiSpecFormat.OpenApi30_Json;
+                format = GetOpenApiSpecFormat(isUrl, api.OpenApiSpecFormat);
                 value = stringWriter.ToString();
 
                 // set the version set id
