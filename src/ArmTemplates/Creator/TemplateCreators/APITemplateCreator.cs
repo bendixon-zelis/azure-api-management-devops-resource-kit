@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 var stringWriter = new StringWriter();
                 var openApiWriter = new OpenApiJsonWriter(stringWriter);
                 openApiSpec.SerializeAsV3(openApiWriter);
-
+                api.OpenApiSpecFormat = OpenApiSpecFormat.OpenApi30_Json;
                 value = stringWriter.ToString();
 
                 // set the version set id
