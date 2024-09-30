@@ -48,5 +48,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Common.Templates
         public APITemplateWSDLSelector WsdlSelector { get; set; }
 
         public string ApiType { get; set; }
+
+        public bool TranslateRequiredQueryParameters { get; set; } = false;
     }
 }
