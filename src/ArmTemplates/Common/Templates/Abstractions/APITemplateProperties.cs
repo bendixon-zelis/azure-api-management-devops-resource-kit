@@ -49,6 +49,6 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Common.Templates
 
         public string ApiType { get; set; }
 
-        public bool TranslateRequiredQueryParameters { get; set; } = false;
+        public string TranslateRequiredQueryParameters { get; set; } = "query";
     }
 }
