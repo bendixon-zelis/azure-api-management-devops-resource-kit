@@ -348,8 +348,6 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 // If the operation does not have parameters, create a new list with the version parameter.
                 foreach (var path in openApiSpec.Paths)
                 {
-                    path.Value.Parameters ??= new List<OpenApiParameter>();
-
                     foreach (var operation in path.Value.Operations)
                     {
                         operation.Value.Parameters ??= new List<OpenApiParameter>();
