@@ -24,6 +24,8 @@ using System.Text;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
 using Microsoft.OpenApi.Models;
+using SharpYaml.Model;
+using Microsoft.OpenApi.Any;
 
 namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.TemplateCreators
 {
@@ -39,11 +41,11 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
         readonly IReleaseTemplateCreator releaseTemplateCreator;
 
         public ApiTemplateCreator(
-            FileReader fileReader, 
-            IPolicyTemplateCreator policyTemplateCreator, 
-            IProductApiTemplateCreator productAPITemplateCreator, 
-            ITagApiTemplateCreator tagAPITemplateCreator, 
-            IDiagnosticTemplateCreator diagnosticTemplateCreator, 
+            FileReader fileReader,
+            IPolicyTemplateCreator policyTemplateCreator,
+            IProductApiTemplateCreator productAPITemplateCreator,
+            ITagApiTemplateCreator tagAPITemplateCreator,
+            IDiagnosticTemplateCreator diagnosticTemplateCreator,
             IReleaseTemplateCreator releaseTemplateCreator,
             ITemplateBuilder templateBuilder)
         {
@@ -238,7 +240,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
 
                 // if the title needs to be modified
                 // we need to embed the OpenAPI definition
-                    
+
                 // read the spec
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(value));
                 var openApiSpec = new OpenApiStreamReader().Read(stream, out var diagnostic);
@@ -254,30 +256,36 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                         using (var client = new WebClient())
                             value = client.DownloadString(value);
                     }
-                   
+
                     // update the title
                     openApiSpec.Info.Title = api.DisplayName;
                 }
 
                 // Find operations that are to be excluded and remove those operations from the spec.
-                if(api.Operations != null) {
+                if (api.Operations != null)
+                {
                     var excludedOperations = api.Operations.Where(o => o.Value.ExcludeFromApi == true).Select(s => s.Key);
-                
+
                     // For each path go through the operations and remove any that are on the excluded operations list.
                     foreach (KeyValuePair<string, OpenApiPathItem> path in openApiSpec.Paths)
                     {
-                        foreach (KeyValuePair<OperationType, OpenApiOperation> operation in path.Value.Operations) {
-                            if(excludedOperations.Contains(operation.Value.OperationId)) {
+                        foreach (KeyValuePair<OperationType, OpenApiOperation> operation in path.Value.Operations)
+                        {
+                            if (excludedOperations.Contains(operation.Value.OperationId))
+                            {
                                 path.Value.Operations.Remove(operation.Key);
                             }
                         }
 
                         // If the path has no operations remaining, remove the path.
-                        if(path.Value.Operations.Count == 0) {
+                        if (path.Value.Operations.Count == 0)
+                        {
                             openApiSpec.Paths.Remove(path.Key);
                         }
                     }
                 }
+
+                AddVersionToOperationsParamlist(api, openApiSpec);
 
                 // Serialize the modified spec
                 var stringWriter = new StringWriter();
@@ -315,6 +323,40 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                 }
             }
             return apiTemplateResource;
+        }
+
+        static void AddVersionToOperationsParamlist(ApiConfig api, OpenApiDocument openApiSpec)
+        {
+            // Add the version parameter to the query string of each operation only if the api version is specified.
+            if (openApiSpec.Paths != null && openApiSpec.Paths.Any() && api.ApiVersion != null)
+            {
+                // Add new parameter to the query string with name version and value of the api version.
+                var versionParameter = new OpenApiParameter
+                {
+                    Name = "version",
+                    In = ParameterLocation.Query,
+                    Required = true,
+                    Schema = new OpenApiSchema
+                    {
+                        Type = "string",
+                        Default = new OpenApiString(api.ApiVersion)
+                    }
+                };
+
+                // Add the version parameter to the query string of each operation.
+                // If the operation already has parameters, add the version parameter to the list.
+                // If the operation does not have parameters, create a new list with the version parameter.
+                foreach (var path in openApiSpec.Paths)
+                {
+                    path.Value.Parameters ??= new List<OpenApiParameter>();
+
+                    foreach (var operation in path.Value.Operations)
+                    {
+                        operation.Value.Parameters ??= new List<OpenApiParameter>();
+                        operation.Value.Parameters.Add(versionParameter);
+                    }
+                }
+            }
         }
 
         internal static IDictionary<string, string[]> GetApiVersionSets(CreatorParameters creatorConfig)
