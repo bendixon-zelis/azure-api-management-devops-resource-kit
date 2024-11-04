@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Management.ApiManagement.ArmTemplates.Creator.Template
                     }
                 }
 
-                AddVersionToOperationsParamlist(api, openApiSpec);
+                //AddVersionToOperationsParamlist(api, openApiSpec);
 
                 // Serialize the modified spec
                 var stringWriter = new StringWriter();
